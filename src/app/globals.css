@@ -1,0 +1,470 @@
+@import "tailwindcss";
+@plugin "tailwindcss-animate";
+
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]) {
+  cursor: pointer;
+}
+
+button:disabled,
+[role="button"][aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+.scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.qb-thin-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+.qb-thin-scroll::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.qb-thin-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.qb-thin-scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+}
+.qb-thin-scroll::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/*
+ * Design tokens — Frontend-design/HomePage.html (EduPlatform Master Plan §1).
+ * Use Tailwind semantic classes (bg-background, text-primary, …), not raw hex in components.
+ */
+
+@theme inline {
+  /* Animations */
+  --animate-marquee: marquee 60s linear infinite;
+
+  @keyframes marquee {
+    0% { transform: translateX(0%); }
+    100% { transform: translateX(-50%); }
+  }
+
+  --animate-collapsible-down: collapsible-down 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  --animate-collapsible-up: collapsible-up 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  @keyframes collapsible-down {
+    from {
+      height: 0;
+      opacity: 0;
+    }
+    to {
+      height: var(--radix-collapsible-content-height);
+      opacity: 1;
+    }
+  }
+
+  @keyframes collapsible-up {
+    from {
+      height: var(--radix-collapsible-content-height);
+      opacity: 1;
+    }
+    to {
+      height: 0;
+      opacity: 0;
+    }
+  }
+
+  /* Radius — HomePage.html: base 0.5rem, xl 1.5rem */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 1.5rem;
+  --radius-2xl: 1.5rem;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-editorial: 0 32px 64px -12px rgba(18, 28, 42, 0.08);
+  --shadow-header: 0 25px 50px -12px rgba(30, 58, 138, 0.05);
+
+  /* Fonts (CSS variables set by next/font on <html>) */
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-headline: var(--font-headline), ui-sans-serif, system-ui, sans-serif;
+  --font-serif-display: var(--font-serif-display), "DM Serif Display", ui-serif, Georgia,
+    serif;
+}
+
+/*
+ * Colors live in a non-inline @theme so utilities reference var(--color-*) at
+ * runtime — this lets role areas re-skin the accent (see .instructor-theme).
+ */
+@theme {
+  /* Primary / brand */
+  --color-primary: #0254d5;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #daecfe;
+  --color-on-primary-container: #ccd8ff;
+  --color-primary-fixed: #dae2ff;
+  --color-primary-fixed-dim: #b2c5ff;
+  --color-on-primary-fixed: #001847;
+  --color-on-primary-fixed-variant: #0040a1;
+  --color-inverse-primary: #b2c5ff;
+
+  /* Secondary */
+  --color-secondary: #032096;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #84aeeb;
+  --color-on-secondary-container: #60000e;
+  --color-secondary-fixed: #ffdad8;
+  --color-secondary-fixed-dim: #ffb3b0;
+  --color-on-secondary-fixed: #410007;
+  --color-on-secondary-fixed-variant: #92001b;
+
+  /* Tertiary */
+  --color-tertiary: #005136;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-container: #006c49;
+  --color-on-tertiary-container: #63f1b4;
+  --color-tertiary-fixed: #6ffbbe;
+  --color-tertiary-fixed-dim: #4edea3;
+  --color-on-tertiary-fixed: #002113;
+  --color-on-tertiary-fixed-variant: #005236;
+
+  /* Surfaces & text */
+  --color-background: #ffffff;
+  --color-foreground: #121c2a;
+  --color-on-background: #121c2a;
+  --color-surface: #f8f9ff;
+  --color-on-surface: #121c2a;
+  --color-on-surface-variant: #424654;
+  --color-surface-variant: #d9e3f6;
+  --color-surface-bright: #f8f9ff;
+  --color-surface-dim: #d0dbed;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #eff4ff;
+  --color-surface-container: #e6eeff;
+  --color-surface-container-high: #dee9fc;
+  --color-surface-container-highest: #d9e3f6;
+  --color-surface-tint: #0056d2;
+  --color-inverse-surface: #27313f;
+  --color-inverse-on-surface: #eaf1ff;
+
+  /* Border */
+  --color-outline: #737785;
+  --color-outline-variant: #c3c6d6;
+  --color-border: #c3c6d6;
+
+  /* Error */
+  --color-error: #ba1a1a;
+  --color-on-error: #ffffff;
+  --color-error-container: #ffdad6;
+  --color-on-error-container: #93000a;
+  --color-destructive: #ba1a1a;
+  --color-destructive-foreground: #ffffff;
+
+  /* Card / muted */
+  --color-card: #ffffff;
+  --color-card-foreground: #121c2a;
+  --color-muted: #d9e3f6;
+  --color-muted-foreground: #424654;
+
+  /* shadcn / learning-project UI parity */
+  --color-primary-foreground: var(--color-on-primary);
+  --color-secondary-foreground: var(--color-on-secondary);
+  --color-accent: var(--color-surface-container-high);
+  --color-accent-foreground: var(--color-foreground);
+  --color-popover: var(--color-surface-container-lowest);
+  --color-popover-foreground: var(--color-foreground);
+  --color-input: var(--color-outline-variant);
+  --color-ring: var(--color-primary);
+}
+
+/*
+ * Instructor area accent — COMPLETE-7 mock purple (#6d5ce8).
+ * Admin stays brand blue, student stays green; this class re-skins
+ * `primary` only inside the instructor panel + its sidebar.
+ */
+.instructor-theme {
+  --color-primary: #6d5ce8;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #f2effd;
+  --color-on-primary-container: #4c3fc4;
+  --color-surface-tint: #6d5ce8;
+}
+
+/*
+ * Student area accent — COMPLETE-1 mock green, matching the student sidebar.
+ * This keeps the public/admin brand blue and instructor purple untouched.
+ */
+.student-theme {
+  --color-primary: #16a34a;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #f0fdf4;
+  --color-on-primary-container: #166534;
+  --color-surface-tint: #16a34a;
+  --color-ring: #16a34a;
+}
+
+@utility shadow-editorial {
+  box-shadow: var(--shadow-editorial);
+}
+
+.font-serif-display {
+  font-family: var(--font-serif-display), "DM Serif Display", ui-serif, Georgia, serif;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-headline), ui-sans-serif, system-ui, sans-serif;
+}
+
+.material-symbols-outlined {
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+}
+
+.material-symbols-filled {
+  font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24;
+}
+
+/* ─── Scrollbar utilities ─────────────────────────────────────────────────── */
+/* Hides the scrollbar track on all browsers while keeping scroll behaviour.   */
+.scrollbar-hide {
+  scrollbar-width: none;       /* Firefox */
+  -ms-overflow-style: none;    /* IE / old Edge */
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;               /* Chrome / Safari / Opera */
+}
+
+.scrollbar-slim {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(148 163 184 / 0.45) transparent;
+}
+
+.scrollbar-slim::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.scrollbar-slim::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-slim::-webkit-scrollbar-thumb {
+  background-color: rgb(148 163 184 / 0.45);
+  border-radius: 9999px;
+}
+
+.scrollbar-slim::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(100 116 139 / 0.65);
+}
+
+/* ─── Secure video player (Plyr + YouTube) ─────────────────────────────────── */
+.secure-video-player .secure-video-plyr,
+.secure-video-player .plyr {
+  height: 100%;
+  width: 100%;
+}
+
+.secure-video-player .plyr--video {
+  height: 100%;
+}
+
+.secure-video-player .plyr__video-wrapper,
+.secure-video-player .plyr__video-embed {
+  height: 100%;
+}
+
+/* Block direct interaction with the YouTube iframe (title, logo, share). */
+.secure-video-player .plyr--youtube .plyr__video-embed iframe {
+  pointer-events: none;
+}
+
+/* Transparent strip over the native YouTube title bar — blocks clicks, no crop. */
+.secure-video-player .youtube-title-blocker {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  z-index: 25;
+  pointer-events: auto;
+  background: transparent;
+}
+
+/* Hide YouTube's native center play/pause icon behind Plyr's overlaid button. */
+.secure-video-player .plyr--youtube.plyr--paused .plyr__video-wrapper::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.secure-video-player .plyr--youtube .plyr__control--overlaid {
+  z-index: 3;
+}
+
+.video-watermark-float {
+  position: absolute;
+  inset: 0;
+  animation: video-watermark-drift 18s linear infinite;
+}
+
+.video-watermark-item {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-24deg);
+  font-size: clamp(0.75rem, 2vw, 1rem);
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.22);
+  white-space: nowrap;
+  user-select: none;
+}
+
+@keyframes video-watermark-drift {
+  0% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(12%, -8%);
+  }
+  50% {
+    transform: translate(-10%, 10%);
+  }
+  75% {
+    transform: translate(8%, 6%);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+.tiptap-course-description {
+  min-height: inherit;
+}
+
+.tiptap-course-description p {
+  margin: 0.45rem 0;
+}
+
+.tiptap-course-description h1 {
+  margin: 0.9rem 0 0.45rem;
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.tiptap-course-description h2 {
+  margin: 0.75rem 0 0.4rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.tiptap-course-description h3 {
+  margin: 0.65rem 0 0.35rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.tiptap-course-description a {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.tiptap-course-description code {
+  border-radius: 0.25rem;
+  background: color-mix(in oklab, var(--muted) 80%, transparent);
+  padding: 0.1rem 0.3rem;
+  font-size: 0.9em;
+}
+
+.tiptap-course-description hr {
+  margin: 1rem 0;
+  border: 0;
+  border-top: 1px solid var(--border);
+}
+
+.tiptap-course-description s,
+.tiptap-course-description strike {
+  text-decoration: line-through;
+}
+
+.tiptap-course-description ul {
+  margin: 0.5rem 0;
+  list-style: disc;
+  padding-left: 1.5rem;
+}
+
+.tiptap-course-description ol {
+  margin: 0.5rem 0;
+  list-style: decimal;
+  padding-left: 1.5rem;
+}
+
+.tiptap-course-description blockquote {
+  margin: 0.75rem 0;
+  border-left: 3px solid var(--primary);
+  padding-left: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+.tiptap-course-description p.is-editor-empty:first-child::before {
+  float: left;
+  height: 0;
+  color: var(--muted-foreground);
+  content: attr(data-placeholder);
+  pointer-events: none;
+}
+
+.math-content {
+  overflow-wrap: anywhere;
+}
+
+.math-content .katex {
+  font-size: 1.08em;
+}
+
+.math-content .katex-display {
+  margin: 0.75rem 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.tiptap-mathematics-render {
+  display: inline-block;
+  padding: 0 0.12em;
+  vertical-align: middle;
+}
+
+.tiptap-mathematics-render--editable {
+  cursor: pointer;
+  border-radius: 0.25rem;
+}
+
+.tiptap-mathematics-render--editable:hover {
+  background: color-mix(in oklab, var(--primary) 14%, transparent);
+}
+
+.tiptap-course-description .katex-display,
+.ProseMirror .katex-display {
+  margin: 0.65rem 0;
+  overflow-x: auto;
+}
