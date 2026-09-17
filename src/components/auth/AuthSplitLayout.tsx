@@ -15,14 +15,14 @@ export function AuthSplitLayout({
 }: AuthSplitLayoutProps) {
   return (
     <div className="-mt-24 flex min-h-dvh flex-col pt-24 lg:flex-row">
-      <section className="relative hidden overflow-hidden lg:flex lg:min-h-[calc(100dvh-6rem)] lg:w-1/2 lg:items-end lg:p-16">
+      <section className="relative hidden overflow-hidden lg:flex lg:min-h-[100dvh] lg:w-1/2 lg:items-center lg:p-16">
         <div className="absolute inset-0 z-0 bg-gradient-to-br from-primary via-primary/80 to-primary-container" />
         <div className="relative z-10 max-w-xl text-on-primary">
           <Link
             href="/"
             className="mb-8 inline-block cursor-pointer text-sm font-semibold text-on-primary/90 hover:text-on-primary"
           >
-            ← AdvanceLMS
+            ← Home
           </Link>
           <h2 className="font-[family-name:var(--font-headline)] text-4xl font-black leading-tight">
             {sideTitle}

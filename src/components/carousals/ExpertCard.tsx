@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { resolveImageSrc } from "@/lib/resolveImageSrc";
 
 type Expert = {
   name: string;
@@ -12,16 +13,19 @@ type Expert = {
 };
 
 export default function ExpertCard({ expert }: { expert: Expert }) {
+  const imageSrc = resolveImageSrc(expert.image) || expert.image;
+
   return (
     <div className="group my-2 rounded-3xl bg-white p-4 shadow-sm transition-all duration-300 hover:shadow-md">
       
       {/* Image */}
       <div className="relative mb-4 aspect-square w-full overflow-hidden rounded-2xl bg-gray-100">
         <Image
-          src={expert.image}
+          src={imageSrc}
           alt={expert.name}
           fill
           className="object-cover transition-transform duration-500 group-hover:scale-105"
+          unoptimized
         />
       </div>
 

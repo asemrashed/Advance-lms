@@ -54,7 +54,11 @@ export default async function AboutPage() {
     if (legacy?.length) {
       partners = legacy.map((name) => ({ name, imageUrl: "", href: "" }));
     } else {
-      partners = HOME_PARTNERS.map((name) => ({ name, imageUrl: "", href: "" }));
+      partners = HOME_PARTNERS.map((p) => ({
+        name: p.name,
+        imageUrl: p.imageUrl,
+        href: p.href,
+      }));
     }
   }
 

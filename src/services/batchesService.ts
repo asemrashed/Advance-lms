@@ -77,6 +77,7 @@ export type GeneratedSessionPreview = {
 export type LiveClassRecord = {
   _id: string;
   batchId: string;
+  chapterId?: string;
   title: string;
   scheduledAt: string;
   durationMinutes: number;

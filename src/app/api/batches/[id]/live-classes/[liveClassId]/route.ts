@@ -24,6 +24,7 @@ function mapLiveClass(row: Record<string, unknown>) {
   return {
     _id: String(row._id),
     batchId: String(row.batchId),
+    chapterId: row.chapterId ? String(row.chapterId) : undefined,
     title: row.title,
     scheduledAt: (row.scheduledAt as Date)?.toISOString?.() ?? row.scheduledAt,
     durationMinutes: row.durationMinutes,

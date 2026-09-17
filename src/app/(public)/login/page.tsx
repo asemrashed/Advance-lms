@@ -1,8 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ComponentType } from "react";
 import Link from "next/link";
 import { getSession, signIn } from "next-auth/react";
+import {
+  LuBookOpen,
+  LuCrown,
+  LuGraduationCap,
+  LuShield,
+} from "react-icons/lu";
 import { AuthSplitLayout } from "@/components/auth/AuthSplitLayout";
 import { AuthGuestOnly } from "@/components/auth/AuthGuestOnly";
 import { PasswordField } from "@/components/auth/PasswordField";
@@ -22,6 +28,40 @@ type DeviceLimitState = {
   currentDeviceLabel: string;
 };
 
+type DemoAccount = {
+  label: string;
+  email: string;
+  password: string;
+  Icon: ComponentType<{ className?: string }>;
+};
+
+const DEMO_ACCOUNTS: DemoAccount[] = [
+  {
+    label: "Super Admin",
+    email: "superadmin@gmail.com",
+    password: "Asdfghjk",
+    Icon: LuCrown,
+  },
+  {
+    label: "Admin",
+    email: "admin@gmail.com",
+    password: "Asdfghjk",
+    Icon: LuShield,
+  },
+  {
+    label: "Instructor",
+    email: "asem@gmail.com",
+    password: "Asdfghjk",
+    Icon: LuBookOpen,
+  },
+  {
+    label: "Student",
+    email: "hasiv@gmail.com",
+    password: "Asdfghjk",
+    Icon: LuGraduationCap,
+  }
+];
+
 function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,13 +73,17 @@ function LoginForm() {
   const [loginToken, setLoginToken] = useState<string | null>(null);
   const [deviceLimitError, setDeviceLimitError] = useState<string | null>(null);
 
-  const completeLogin = async (options?: { deviceLoginToken?: string }) => {
+  const completeLogin = async (
+    loginEmail: string,
+    loginPassword: string,
+    options?: { deviceLoginToken?: string },
+  ) => {
     const deviceId = getOrCreateDeviceId();
     const userAgent = getDeviceUserAgent();
 
     const result = await signIn("credentials", {
-      email: email.trim(),
-      password,
+      email: loginEmail.trim(),
+      password: loginPassword,
       deviceId,
       userAgent,
       deviceLoginToken: options?.deviceLoginToken || "",
@@ -62,8 +106,10 @@ function LoginForm() {
     return true;
   };
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const loginWithCredentials = async (
+    loginEmail: string,
+    loginPassword: string,
+  ) => {
     setError(null);
     setDeviceLimitError(null);
     setLoading(true);
@@ -76,8 +122,8 @@ function LoginForm() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: email.trim(),
-          password,
+          email: loginEmail.trim(),
+          password: loginPassword,
           deviceId,
           userAgent,
         }),
@@ -108,11 +154,23 @@ function LoginForm() {
         return;
       }
 
-      await completeLogin();
+      await completeLogin(loginEmail, loginPassword);
     } catch {
       setError("Login failed. Please try again.");
       setLoading(false);
     }
+  };
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    await loginWithCredentials(email, password);
+  };
+
+  const handleDemoLogin = async (account: DemoAccount) => {
+    if (loading) return;
+    setEmail(account.email);
+    setPassword(account.password);
+    await loginWithCredentials(account.email, account.password);
   };
 
   const handleRequestOtp = async () => {
@@ -161,7 +219,9 @@ function LoginForm() {
       }
 
       setDeviceLimitOpen(false);
-      return await completeLogin({ deviceLoginToken: loginToken });
+      return await completeLogin(email, password, {
+        deviceLoginToken: loginToken,
+      });
     } catch {
       setDeviceLimitError("Verification failed. Please try again.");
       setLoading(false);
@@ -233,6 +293,32 @@ function LoginForm() {
               {loading ? "Signing in..." : "Continue"}
             </button>
           </form>
+
+          <div className="mt-8">
+            <p className="mb-3 text-center text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              Quick Demo Accounts
+            </p>
+            <div className="grid grid-cols-2 gap-2.5">
+              {DEMO_ACCOUNTS.map((account) => {
+                const { Icon } = account;
+                return (
+                  <button
+                    key={account.email}
+                    type="button"
+                    onClick={() => void handleDemoLogin(account)}
+                    disabled={loading}
+                    className="flex min-h-[4.5rem] cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl border border-border/80 bg-primary/[0.04] px-2 py-3 text-primary transition hover:border-primary/40 hover:bg-primary/[0.08] disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <Icon className="h-5 w-5 shrink-0" aria-hidden />
+                    <span className="text-center text-xs font-semibold leading-tight">
+                      {account.label}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           <p className="mt-6 text-center text-sm text-muted-foreground">
             No account?{" "}
             <Link

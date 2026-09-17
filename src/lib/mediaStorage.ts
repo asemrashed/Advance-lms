@@ -80,7 +80,7 @@ export async function readUploadFile(
 ): Promise<{ buffer: Buffer; contentType?: string } | null> {
   if (!validateRelativePath(relative)) return null;
 
-  if (useLocalDisk()) {
+  const readLocal = async () => {
     const filePath = resolveLocalPath(relative);
     if (!filePath) return null;
     try {
@@ -88,13 +88,24 @@ export async function readUploadFile(
     } catch {
       return null;
     }
+  };
+
+  if (useLocalDisk()) {
+    return readLocal();
   }
 
-  const key = s3KeyFromUploadsRelative(relative);
-  const buffer = await getObjectBuffer(key);
-  if (!buffer) return null;
-  const meta = await headObject(key);
-  return { buffer, contentType: meta?.contentType };
+  try {
+    const key = s3KeyFromUploadsRelative(relative);
+    const buffer = await getObjectBuffer(key);
+    if (!buffer) {
+      // Fall back to disk when object is missing from S3 (e.g. local-only uploads).
+      return readLocal();
+    }
+    const meta = await headObject(key);
+    return { buffer, contentType: meta?.contentType };
+  } catch {
+    return readLocal();
+  }
 }
 
 export async function deleteUploadFiles(

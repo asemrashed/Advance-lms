@@ -259,6 +259,34 @@ export function InstructorMaterialsClient({
     for (const row of liveClasses) map.set(row._id, row);
     return map;
   }, [liveClasses]);
+
+  /**
+   * Lessons are course-scoped and shared across batches, but live classes are
+   * batch-scoped. Prefer the live class that belongs to the selected batch.
+   */
+  const resolveLiveClassForLesson = useCallback(
+    (lesson: Lesson): LiveClassRecord | undefined => {
+      if (lesson.liveClassId) {
+        const linked = liveClassById.get(lesson.liveClassId);
+        if (linked) return linked;
+      }
+      const title = lesson.title.trim().toLowerCase();
+      const chapter = selectedChapterId;
+      const byChapterAndTitle = liveClasses.find(
+        (row) =>
+          row.isActive !== false &&
+          row.title.trim().toLowerCase() === title &&
+          (!chapter || !row.chapterId || row.chapterId === chapter),
+      );
+      if (byChapterAndTitle) return byChapterAndTitle;
+      return liveClasses.find(
+        (row) =>
+          row.isActive !== false && row.title.trim().toLowerCase() === title,
+      );
+    },
+    [liveClassById, liveClasses, selectedChapterId],
+  );
+
   const batchMeetLink = useMemo(() => {
     const selected = batches.find((b) => b._id === batchId)?.meetLink?.trim();
     if (selected) return selected;
@@ -618,16 +646,14 @@ export function InstructorMaterialsClient({
       return;
     }
     const lesson = lessons.find((row) => row._id === expandedLessonId);
-    const live = lesson?.liveClassId
-      ? liveClassById.get(lesson.liveClassId)
-      : undefined;
+    const live = lesson ? resolveLiveClassForLesson(lesson) : undefined;
     setMeetDraft((prev) => prev.trim() || live?.meetLink || batchMeetLink);
     if (seededScheduleLessonIdRef.current === expandedLessonId) return;
     if (live?.scheduledAt) {
       setScheduledDraft(toDatetimeLocalValue(new Date(live.scheduledAt)));
       seededScheduleLessonIdRef.current = expandedLessonId;
     }
-  }, [expandedLessonId, liveClassById, batchMeetLink, lessons]);
+  }, [expandedLessonId, resolveLiveClassForLesson, batchMeetLink, lessons]);
 
   useEffect(() => {
     if (!selectedChapterId || !courseId) return;
@@ -1001,8 +1027,8 @@ export function InstructorMaterialsClient({
   const expandedLiveClassId = useMemo(() => {
     if (!expandedLessonId) return '';
     const lesson = lessons.find((l) => l._id === expandedLessonId);
-    return lesson?.liveClassId || '';
-  }, [expandedLessonId, lessons]);
+    return lesson ? resolveLiveClassForLesson(lesson)?._id || '' : '';
+  }, [expandedLessonId, lessons, resolveLiveClassForLesson]);
 
   useEffect(() => {
     if (!expandedLessonId || !batchId || !expandedLiveClassId) {
@@ -1036,9 +1062,7 @@ export function InstructorMaterialsClient({
   }, [expandedLessonId, batchId, expandedLiveClassId]);
 
   const openLessonEditor = (lesson: Lesson) => {
-    const live = lesson.liveClassId
-      ? liveClassById.get(lesson.liveClassId)
-      : undefined;
+    const live = resolveLiveClassForLesson(lesson);
     setMeetDraft(live?.meetLink || batchMeetLink);
     setRecordingDraft(live?.recordingUrl || '');
     setPublicPreviewDraft(Boolean(lesson.isFree));
@@ -1070,13 +1094,17 @@ export function InstructorMaterialsClient({
           ? editLessonTitle.trim()
           : lesson.title;
       const meetLink = meetDraft.trim() || batchMeetLink;
-      let liveClassId = lesson.liveClassId || '';
+      const resolved = resolveLiveClassForLesson(lesson);
+      // Only update when the linked live class belongs to the selected batch.
+      // Shared curriculum lessons may still point at another batch's session.
+      let liveClassId = resolved?._id || '';
       if (liveClassId) {
         const res = await batchesService.updateLiveClass(batchId, liveClassId, {
           title,
           meetLink,
           recordingUrl: recordingDraft.trim(),
           scheduledAt,
+          type: recordingDraft.trim() ? 'recorded' : 'live',
         });
         if (!res.success) {
           setError(res.error || 'Failed to update live class');
@@ -1087,28 +1115,32 @@ export function InstructorMaterialsClient({
           title,
           scheduledAt,
           durationMinutes: 60,
-          type: 'live',
+          type: recordingDraft.trim() ? 'recorded' : 'live',
           isActive: true,
           meetLink: meetLink || undefined,
           recordingUrl: recordingDraft.trim() || undefined,
+          chapterId: selectedChapterId || undefined,
         });
         if (!res.success || !res.data?.liveClass) {
           setError(res.error || 'Failed to create live class');
           return null;
         }
         liveClassId = res.data.liveClass._id;
-        const lessonRes = await fetch(`/api/lessons/${lesson._id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            lessonType: 'live',
-            liveClassId,
-          }),
-        });
-        if (!lessonRes.ok) {
-          const data = await lessonRes.json();
-          setError(data?.error || 'Failed to link live class to lesson');
-          return null;
+        // Shared lessons may already point at another batch's session — don't overwrite.
+        if (!lesson.liveClassId) {
+          const lessonRes = await fetch(`/api/lessons/${lesson._id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              lessonType: 'live',
+              liveClassId,
+            }),
+          });
+          if (!lessonRes.ok) {
+            const data = await lessonRes.json();
+            setError(data?.error || 'Failed to link live class to lesson');
+            return null;
+          }
         }
       }
       await Promise.all([
@@ -1321,7 +1353,7 @@ export function InstructorMaterialsClient({
     const total = lessons.length;
     if (total === 0) return { pct: 0, label: 'Not started', done: 0, total: 0 };
     const done = lessons.filter((l) => {
-      const live = l.liveClassId ? liveClassById.get(l.liveClassId) : undefined;
+      const live = resolveLiveClassForLesson(l);
       return lessonStatus(l, live) === 'done';
     }).length;
     const pct = Math.round((done / total) * 100);
@@ -1839,9 +1871,7 @@ export function InstructorMaterialsClient({
                 ) : (
                   <div className="space-y-3">
                     {lessons.map((lesson, index) => {
-                      const live = lesson.liveClassId
-                        ? liveClassById.get(lesson.liveClassId)
-                        : undefined;
+                      const live = resolveLiveClassForLesson(lesson);
                       const status = lessonStatus(lesson, live);
                       const assignment = lessonAssignment(lesson._id);
                       const worksheet = lessonWorksheet(lesson._id);

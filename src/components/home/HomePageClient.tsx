@@ -109,7 +109,11 @@ export function HomePageClient({
     if (legacy?.length) {
       return legacy.map((name) => ({ name, imageUrl: "", href: "" }));
     }
-    return HOME_PARTNERS.map((name) => ({ name, imageUrl: "", href: "" }));
+    return HOME_PARTNERS.map((p) => ({
+      name: p.name,
+      imageUrl: p.imageUrl,
+      href: p.href,
+    }));
   }, [cmsData?.partners?.items, cmsData?.footer?.paymentGateway?.methods]);
 
   const featuresContent = useMemo(

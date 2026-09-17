@@ -65,11 +65,11 @@ export const HOME_FEATURES = [
 ] as const;
 
 export const HOME_PARTNERS = [
-  "HubSpot",
-  "Zoom",
-  "Zendesk",
-  "Notion",
-  "Slack",
+  { name: "HubSpot", imageUrl: "https://logo.clearbit.com/hubspot.com", href: "https://www.hubspot.com" },
+  { name: "Zoom", imageUrl: "https://logo.clearbit.com/zoom.us", href: "https://zoom.us" },
+  { name: "Zendesk", imageUrl: "https://logo.clearbit.com/zendesk.com", href: "https://www.zendesk.com" },
+  { name: "Notion", imageUrl: "https://logo.clearbit.com/notion.so", href: "https://www.notion.so" },
+  { name: "Slack", imageUrl: "https://logo.clearbit.com/slack.com", href: "https://slack.com" },
 ] as const;
 
 export const HOME_FAQ = [

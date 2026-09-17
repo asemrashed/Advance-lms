@@ -470,10 +470,10 @@ export const defaultWebsiteContent: WebsiteContent = {
   },
   partners: {
     title: "Our Trusted Partners & Integrations",
-    items: HOME_PARTNERS.map((name) => ({
-      name,
-      imageUrl: "",
-      href: "",
+    items: HOME_PARTNERS.map((p) => ({
+      name: p.name,
+      imageUrl: p.imageUrl,
+      href: p.href,
     })),
   },
   hero: {

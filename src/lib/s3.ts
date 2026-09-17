@@ -14,16 +14,27 @@ function trimEnv(name: string) {
   return (process.env[name] || "").trim();
 }
 
-let client: S3Client | null = null;
-
+/** True when real AWS credentials are set (ignores empty / placeholder values). */
 export function isS3Configured() {
-  return Boolean(
-    trimEnv("AWS_ACCESS_KEY_ID") &&
-      trimEnv("AWS_SECRET_ACCESS_KEY") &&
-      trimEnv("AWS_DEFAULT_REGION") &&
-      trimEnv("AWS_S3_BUCKET"),
-  );
+  const accessKey = trimEnv("AWS_ACCESS_KEY_ID");
+  const secretKey = trimEnv("AWS_SECRET_ACCESS_KEY");
+  const region = trimEnv("AWS_DEFAULT_REGION");
+  const bucket = trimEnv("AWS_S3_BUCKET");
+  if (!accessKey || !secretKey || !region || !bucket) return false;
+
+  const looksLikePlaceholder = (value: string) =>
+    /^(your_|changeme|todo|xxx|placeholder|<.*>$)/i.test(value) ||
+    value === "your_aws_access_key_id" ||
+    value === "your_aws_secret_access_key";
+
+  if (looksLikePlaceholder(accessKey) || looksLikePlaceholder(secretKey)) {
+    return false;
+  }
+
+  return true;
 }
+
+let client: S3Client | null = null;
 
 export function getS3Bucket() {
   const bucket = trimEnv("AWS_S3_BUCKET");

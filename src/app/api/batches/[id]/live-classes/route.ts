@@ -21,6 +21,7 @@ function mapLiveClass(row: Record<string, unknown>, includeLinks: boolean) {
   const base = {
     _id: String(row._id),
     batchId: String(row.batchId),
+    chapterId: row.chapterId ? String(row.chapterId) : undefined,
     title: row.title,
     scheduledAt: (row.scheduledAt as Date)?.toISOString?.() ?? row.scheduledAt,
     durationMinutes: row.durationMinutes,
@@ -129,6 +130,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const liveClass = await LiveClass.create({
       batchId: toObjectId(batchId),
+      chapterId:
+        typeof body.chapterId === "string" && isObjectId(body.chapterId)
+          ? toObjectId(body.chapterId)
+          : undefined,
       title,
       scheduledAt,
       durationMinutes,
@@ -138,6 +143,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         typeof body.recordingUrl === "string" ? body.recordingUrl.trim() : undefined,
       type,
       isActive: body.isActive !== false,
+      instructorId: auth.user.id ? toObjectId(auth.user.id) : undefined,
     });
 
     await syncLiveClassToBatchRoutine(batchId, liveClass, recurrence);

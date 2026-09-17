@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/cn";
+import { resolveImageSrc } from "@/lib/resolveImageSrc";
 
 export type PartnerItem = {
   name: string;
@@ -28,8 +29,9 @@ export function HomePartnersSection({ title, partners }: HomePartnersSectionProp
       <div className="relative flex w-full overflow-hidden">
         <div className="flex w-max animate-marquee items-center">
           {[...partners, ...partners, ...partners, ...partners, ...partners, ...partners, ...partners, ...partners, ...partners, ...partners].map((p, index) => {
-            const inner = p.imageUrl ? (
-              <Image src={p.imageUrl} alt={p.name} width={150} height={70} className="object-contain" />
+            const src = p.imageUrl ? resolveImageSrc(p.imageUrl) : "";
+            const inner = src ? (
+              <Image src={src} alt={p.name} width={150} height={70} className="object-contain" unoptimized />
             ) : (
               <span
                 className={cn(
